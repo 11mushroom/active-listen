@@ -11,23 +11,21 @@
 
 int chlen(char* mess){
   int len=0;
-  int* i=new int(0);
-  while(mess[*i]){
+  int i=0;
+  while(mess[i]){
     i++;
     len++;
   };
-  delete i;
   return len;
 };
 
 
 char* tochr(std::string in){
-  int* len=new int(in.length());
-  char* res=new char[*len];
-  for(int i=0;i< *len;i++){
+  int len=in.length();
+  char res[len];
+  for(int i=0;i<len;i++){
     res[i]=in[i];
   };
-  delete len;
   return res;
 
 };
@@ -89,7 +87,7 @@ char* rprint(char* bytes, int len, char* pref=empty){
     i++;
     a++;
   };
-  char* res = new char[ed_len+strlen(pref)];
+  char res[ed_len+strlen(pref)];
   sprintf(res,"%s%s",pref,edited);
   //delete[] edited;
 
