@@ -68,7 +68,7 @@ char hex[16]={'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
 
 char* rprint(char* bytes, int len, char* pref=empty){
   int ed_len=(len*4);
-  char edited[ed_len];
+  char* edited=new char[ed_len];
   int i=0;
   int a=0;
 
@@ -80,16 +80,16 @@ char* rprint(char* bytes, int len, char* pref=empty){
       a++;
       edited[a]='x';
       a++;
-      edited[a]=hex[(bytes[i]>>4)&((1<<4)-1)];
+      edited[a]=hex[(bytes[i]>>4)&15];
       a++;
-      edited[a]=hex[bytes[i]&((1<<4)-1)];
+      edited[a]=hex[bytes[i]&15];
     };
     i++;
     a++;
   };
-  char res[ed_len+strlen(pref)];
+  char* res=new char[a+strlen(pref)];
   sprintf(res,"%s%s",pref,edited);
-  //delete[] edited;
+  delete[] edited;
 
   return res;
 };
@@ -99,11 +99,12 @@ char* rprint(char* bytes, int len, const char* pr){
 };
 
 void print(char* bytes, int len, char* pref=empty){
-  printf("%s\n",rprint(bytes,len,pref));
+  printf("%s\n", rprint(bytes,len,pref));
+  
 };
 
 void print(char* bytes, int len, const char* pr){
-  printf("%s\n",rprint(bytes,len,pr));
+  printf("%s\n", rprint(bytes,len,pr));
 
 };
 //}
@@ -146,6 +147,7 @@ void Connector(Conn c){
         *(c.conn_cl)=false;
         break;
       };
+      delete[] buff;
     };
 
     close(&(c.client));
@@ -190,6 +192,7 @@ void Transfer(Conn c){
           *(c.conn_serv)=false;
           break;
         };
+        delete[] buff;
       };
       *(c.conn_serv)=false;
       printf("[programm]connection with server has ended\n");
