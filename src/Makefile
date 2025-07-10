@@ -33,7 +33,7 @@ listen.o: listen.cpp Msock.h
 Msock.o: Msock.cpp
 	$(CXX) -c $(CXXFLAGS) $^ -o $@
 
-install:
+install: $(progfile)
 	cp $(progfile) $(INSTDIR)/
 
 uninstall:
