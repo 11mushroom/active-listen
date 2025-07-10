@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -73,7 +74,7 @@ void rprint(char** out, char* bytes, int len, char* pref=empty){
   int a=0;
 
   while(i<len){
-    if(bytes[i]>31 && bytes[i]<127){
+    if(((uint8_t)bytes[i])>31 && ((uint8_t)bytes[i])<127){
       edited[a]=bytes[i];
     }else{
       edited[a]='\\';
@@ -87,7 +88,7 @@ void rprint(char** out, char* bytes, int len, char* pref=empty){
     i++;
     a++;
   };
-  delete[] out;
+  delete[] *out;
   *out=new char[a+strlen(pref)+1];
   sprintf(*out,"%s%s",pref,edited);
   delete[] edited;
