@@ -1,7 +1,9 @@
 #include <cstdint>
+#include <ios>
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
+#include <string>
 #include <thread>
 #include <cstring>
 #include <sys/socket.h>
@@ -120,7 +122,10 @@ struct Conn {
   Msock serv;
   bool* conn_cl;
   bool* conn_serv;
-  std::ofstream *log_file;
+  bool logging;
+  bool stdout_logs;
+  std::ofstream *cl_file;
+  std::ofstream *serv_file;
 };
 
 
@@ -139,13 +144,17 @@ void Connector(Conn c){
         break;
       };
 
-      rprint(&buff, smess.data, smess.data_len,"[server]");
+      if(c.stdout_logs){
+        rprint(&buff, smess.data, smess.data_len,"[server]");
+        printf("%s\n",buff);
+      }
       /*if(find(smess.data, smess.data_len, "\x04ping", 5)){
         c.client->Send(const_cast<char*>("\x0e\x00R\x01\x00\x03Say\x04pong"), 14);
         printf("%s\n",buff);
       };*/
-      //*c.log_file << buff << '\n';
-      printf("%s\n",buff);
+      if(c.logging){
+        c.serv_file->write(smess.data, smess.data_len);
+      }
 
       recv(&smess, &(c.client),1024);
       if(smess.data_len<=0){
@@ -158,6 +167,7 @@ void Connector(Conn c){
     close(&(c.client));
     std::cout << "[programm]connection with client has ended" << std::endl;
     *(c.conn_cl)=false;
+    c.serv_file->close();
 
     
   };
@@ -188,10 +198,14 @@ void Transfer(Conn c){
           break;
         };
 
-        rprint(&buff, cmess.data, cmess.data_len,"[client]");
-	      printf("%s\n",buff);
+        if(c.stdout_logs){
+          rprint(&buff, cmess.data, cmess.data_len,"[client]");
+	        printf("%s\n",buff);
+        }
 
-        //*c.log_file << buff << '\n';
+        if(c.logging){
+          c.cl_file->write(cmess.data, cmess.data_len);
+        }
 
         recv(&cmess, &(c.serv), 1024);
         if(cmess.data_len <= 0){
@@ -209,19 +223,25 @@ void Transfer(Conn c){
   *(c.conn_serv)=false;
   while(*(c.conn_cl)){};
 
-  c.log_file->close();
+  c.cl_file->close();
 
 };
 
 int main(int argc, char** argv){
 
-  if(argc < 4){
+  if(argc < 5){
     return -1;
   };
-  
-  Msock cl = create(argv[2], std::stoi(argv[3]));
-  Msock ser = create(std::stoi(argv[1]));
-  std::ofstream file("logs");
+
+  uint32_t flags=std::stoi(argv[1]);
+  bool logging=((flags&0b01)!= 0);
+  bool stdout_logs=((flags&0b10)!=0);
+
+
+  Msock cl = create(argv[3], std::stoi(argv[4]));
+  Msock ser = create(std::stoi(argv[2]));
+  std::ofstream cl_file((!(argc<7) ? argv[5] : "liste.cl.logs") , std::ios::binary|std::ios::app);
+  std::ofstream serv_file(( !(argc<7) ? argv[6] : "listen.serv.logs") , std::ios::binary|std::ios::app);
 
   if(bind(&ser) < 0) return 1;
 
@@ -234,7 +254,10 @@ int main(int argc, char** argv){
   connections.serv=ser;
   connections.conn_cl=&conn_cl;
   connections.conn_serv=&conn_serv;
-  connections.log_file=&file;
+  connections.logging=logging;
+  connections.stdout_logs=stdout_logs;
+  connections.cl_file=&cl_file;
+  connections.serv_file=&serv_file;
 
   std::thread T(Transfer, connections);
 
