@@ -240,7 +240,7 @@ int main(int argc, char** argv){
 
   Msock cl = create(argv[3], std::stoi(argv[4]));
   Msock ser = create(std::stoi(argv[2]));
-  std::ofstream cl_file((!(argc<7) ? argv[5] : "liste.cl.logs") , std::ios::binary|std::ios::app);
+  std::ofstream cl_file((!(argc<7) ? argv[5] : "listen.cl.logs") , std::ios::binary|std::ios::app);
   std::ofstream serv_file(( !(argc<7) ? argv[6] : "listen.serv.logs") , std::ios::binary|std::ios::app);
 
   if(bind(&ser) < 0) return 1;
