@@ -66,7 +66,7 @@ bool find(char* full, const char* item, int i_len){
 char* empty=const_cast<char*>("");
 char hex[16]={'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
 
-void rprint(char* out, char* bytes, int len, char* pref=empty){
+void rprint(char** out, char* bytes, int len, char* pref=empty){
   int ed_len=(len*4);
   char* edited=new char[ed_len+1];
   int i=0;
@@ -88,25 +88,25 @@ void rprint(char* out, char* bytes, int len, char* pref=empty){
     a++;
   };
   delete[] out;
-  out=new char[a+strlen(pref)+1];
-  sprintf(out,"%s%s",pref,edited);
+  *out=new char[a+strlen(pref)+1];
+  sprintf(*out,"%s%s",pref,edited);
   delete[] edited;
 };
 
-void rprint(char* out, char* bytes, int len, const char* pr){
+void rprint(char** out, char* bytes, int len, const char* pr){
   rprint(out, bytes,len,const_cast<char*>(pr));
 };
 
 void print(char* bytes, int len, char* pref=empty){
   char* s=nullptr;
-  rprint(s, bytes,len,pref);
+  rprint(&s, bytes,len,pref);
   printf("%s\n", s);
   delete[] s;
 };
 
 void print(char* bytes, int len, const char* pr){
   char* s=nullptr;
-  rprint(s, bytes,len,pr);
+  rprint(&s, bytes,len,pr);
   printf("%s\n", s);
   delete[] s;
 };
@@ -138,7 +138,7 @@ void Connector(Conn c){
         break;
       };
 
-      rprint(buff, smess.data, smess.data_len,"[server]");
+      rprint(&buff, smess.data, smess.data_len,"[server]");
       /*if(find(smess.data, smess.data_len, "\x04ping", 5)){
         c.client->Send(const_cast<char*>("\x0e\x00R\x01\x00\x03Say\x04pong"), 14);
         printf("%s\n",buff);
@@ -187,7 +187,7 @@ void Transfer(Conn c){
           break;
         };
 
-        rprint(buff, cmess.data, cmess.data_len,"[client]");
+        rprint(&buff, cmess.data, cmess.data_len,"[client]");
 	      printf("%s\n",buff);
 
         //*c.log_file << buff << '\n';
