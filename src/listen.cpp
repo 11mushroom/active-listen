@@ -66,9 +66,9 @@ bool find(char* full, const char* item, int i_len){
 char* empty=const_cast<char*>("");
 char hex[16]={'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
 
-char* rprint(char* bytes, int len, char* pref=empty){
+void rprint(char* out, char* bytes, int len, char* pref=empty){
   int ed_len=(len*4);
-  char* edited=new char[ed_len];
+  char* edited=new char[ed_len+1];
   int i=0;
   int a=0;
 
@@ -87,25 +87,28 @@ char* rprint(char* bytes, int len, char* pref=empty){
     i++;
     a++;
   };
-  char* res=new char[a+strlen(pref)];
-  sprintf(res,"%s%s",pref,edited);
+  delete[] out;
+  out=new char[a+strlen(pref)+1];
+  sprintf(out,"%s%s",pref,edited);
   delete[] edited;
-
-  return res;
 };
 
-char* rprint(char* bytes, int len, const char* pr){
-  return rprint(bytes,len,const_cast<char*>(pr));
+void rprint(char* out, char* bytes, int len, const char* pr){
+  rprint(out, bytes,len,const_cast<char*>(pr));
 };
 
 void print(char* bytes, int len, char* pref=empty){
-  printf("%s\n", rprint(bytes,len,pref));
-  
+  char* s=nullptr;
+  rprint(s, bytes,len,pref);
+  printf("%s\n", s);
+  delete[] s;
 };
 
 void print(char* bytes, int len, const char* pr){
-  printf("%s\n", rprint(bytes,len,pr));
-
+  char* s=nullptr;
+  rprint(s, bytes,len,pr);
+  printf("%s\n", s);
+  delete[] s;
 };
 //}
 
@@ -126,7 +129,8 @@ void Connector(Conn c){
   while(!*(c.conn_cl)){};
   if(*(c.conn_cl)){
     //char* sdata=new char[1024];
-    smess=recv(&(c.client),1024);
+    recv(&smess, &(c.client),1024);
+    char* buff=nullptr;
 
     while(smess.data_len>0 && *(c.conn_serv) && *(c.conn_cl)){
       if(send(&(c.serv), smess.data, smess.data_len) < 0){
@@ -134,7 +138,7 @@ void Connector(Conn c){
         break;
       };
 
-      char* buff=rprint(smess.data, smess.data_len,"[server]");
+      rprint(buff, smess.data, smess.data_len,"[server]");
       /*if(find(smess.data, smess.data_len, "\x04ping", 5)){
         c.client->Send(const_cast<char*>("\x0e\x00R\x01\x00\x03Say\x04pong"), 14);
         printf("%s\n",buff);
@@ -142,13 +146,13 @@ void Connector(Conn c){
       //*c.log_file << buff << '\n';
       printf("%s\n",buff);
 
-      smess=recv(&(c.client),1024);
+      recv(&smess, &(c.client),1024);
       if(smess.data_len<=0){
         *(c.conn_cl)=false;
         break;
       };
-      delete[] buff;
     };
+    delete[] buff;
 
     close(&(c.client));
     std::cout << "[programm]connection with client has ended" << std::endl;
@@ -174,7 +178,8 @@ void Transfer(Conn c){
 
       printf("[programm]connection with server established\n");
       Mess cmess;
-      cmess=recv(&(c.serv),1024);
+      recv(&cmess, &(c.serv),1024);
+      char* buff=nullptr;
 
       while(cmess.data_len>0 && *(c.conn_serv) && *(c.conn_cl)){
         if(send(&(c.client), cmess.data, cmess.data_len) < 0) {
@@ -182,18 +187,18 @@ void Transfer(Conn c){
           break;
         };
 
-        char* buff=rprint(cmess.data, cmess.data_len,"[client]");
+        rprint(buff, cmess.data, cmess.data_len,"[client]");
 	      printf("%s\n",buff);
 
         //*c.log_file << buff << '\n';
 
-        cmess=recv(&(c.serv), 1024);
+        recv(&cmess, &(c.serv), 1024);
         if(cmess.data_len <= 0){
           *(c.conn_serv)=false;
           break;
         };
-        delete[] buff;
       };
+      delete[] buff;
       *(c.conn_serv)=false;
       printf("[programm]connection with server has ended\n");
       
