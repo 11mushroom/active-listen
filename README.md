@@ -40,7 +40,7 @@ if it's installed in custom directory
 ```
 make uninstall INSTDIR=/path/to/directory/where/you/installed/it
 ```
-of if custom prefix
+or if custom prefix
 ```
 make uninstall PREFIX=/path/to/prefix/using/which/you/installed/it
 ```
